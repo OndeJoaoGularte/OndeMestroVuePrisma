@@ -288,9 +288,9 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useFichaOrdem } from '@/composables/ordem/useFicha'; // Ajuste o caminho se necessário
-import ModalRD from './modals/ModalRD.vue';
+import ModalRD from './modals/info/ModalRD.vue';
 import type { ResistenciaManual } from '@/types/ordem/models';
-import ModalOrigem from './modals/ModalOrigem.vue';
+import ModalOrigem from './modals/escolhas/ModalOrigem.vue';
 
 const emit = defineEmits(['open:origem', 'open:classe', 'open:trilha', 'open:idade']);
 

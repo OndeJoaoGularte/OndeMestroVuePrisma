@@ -73,12 +73,12 @@ import CardCentro from '@/components/ordem/CardCentro.vue';
 import CardDireito from '@/components/ordem/CardDireito.vue';
 
 // MODAIS (Mantidos)
-import ModalOrigem from '@/components/ordem/modals/ModalOrigem.vue';
-import ModalClasse from '@/components/ordem/modals/ModalClasse.vue';
-import ModalTrilha from '@/components/ordem/modals/ModalTrilha.vue';
-import ModalIdade from '@/components/ordem/modals/ModalIdade.vue';
-import ModalAddHabilidade from '@/components/ordem/modals/ModalAddHabilidade.vue';
-import ModalEditHabilidade from '@/components/ordem/modals/ModalEditHabilidade.vue';
+import ModalOrigem from '@/components/ordem/modals/escolhas/ModalOrigem.vue';
+import ModalClasse from '@/components/ordem/modals/escolhas/ModalClasse.vue';
+import ModalTrilha from '@/components/ordem/modals/escolhas/ModalTrilha.vue';
+import ModalIdade from '@/components/ordem/modals/info/ModalIdade.vue';
+import ModalAddHabilidade from '@/components/ordem/modals/add/ModalAddHabilidade.vue';
+import ModalEditHabilidade from '@/components/ordem/modals/editar/ModalEditHabilidade.vue';
 
 const { character, snackbar, classeNome, handleSaveIdade, adicionarHabilidade, atualizarHabilidade, removerHabilidade } = useFichaOrdem();
 
@@ -96,7 +96,7 @@ const modalPericia = ref<Pericia | null>(null);
 const abrirEdicaoHabilidade = (hab: Habilidade) => { habilidadeEmEdicao.value = hab; showEditHabilidadeModal.value = true; };
 const showModalPericia = computed({ get: () => !!modalPericia.value, set: (val) => { if (!val) modalPericia.value = null; } });
 const nomeClasseTratado = computed(() => { if (!classeNome.value) return ''; return classeNome.value.split(' ')[0] || ''; });
-const selecionarOrigem = (id: string) => { character.value.origemId = id; showOrigemModal.value = false; }
+const selecionarOrigem = (id: string) => { character.value.origem = id; showOrigemModal.value = false; }
 const selecionarClasse = (id: string) => { character.value.classe = id; showClasseModal.value = false; }
 const selecionarTrilha = (id: string) => { character.value.trilha = id; showTrilhaModal.value = false; }
 const abrirModalPericia = (pericia: Pericia) => { modalPericia.value = pericia; }

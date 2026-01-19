@@ -556,8 +556,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useFichaOrdem } from '@/composables/ordem/useFicha'
-import ModalAddItem from './modals/ModalAddItem.vue'
-import ModalEditItem from './modals/ModalEditItem.vue'
+import ModalAddItem from './modals/add/ModalAddItem.vue'
+import ModalEditItem from './modals/editar/ModalEditItem.vue'
 import type { ItemInstancia } from '@/types/ordem/models';
 
 const emit = defineEmits([
