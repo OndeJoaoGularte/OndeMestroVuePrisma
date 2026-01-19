@@ -1,0 +1,110 @@
+// backend/prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Enum para as Classes do Ordem
+enum Classe {
+  Combatente
+  Especialista
+  Ocultista
+}
+
+model User {
+  id         String   @id @default(cuid())
+  email      String   @unique
+  username   String   @unique
+  password   String 
+  
+  campaigns  Campaign[]
+  characters CharacterSheet[]
+}
+
+model Campaign {
+  id     String @id @default(cuid())
+  name   String
+  
+  master   User   @relation(fields: [masterId])
+  masterId String
+  
+  characters CharacterSheet[]
+}
+
+model CharacterSheet {
+  id    String @id @default(cuid())
+  name  String // Este será o "Agente"
+  
+  // Relações
+  player   User   @relation(fields: [playerId])
+  playerId String
+  
+  campaign   Campaign? @relation(fields: [campaignId])
+  campaignId String?
+
+  // --- ABA "MECÂNICA" (O que já tínhamos) ---
+  nex    Int    @default(5)
+  level           Int     @default(1)
+  pe_turno        Int     @default(1)
+  deslocamento    String @default("9m / 6q")     
+  classe Classe
+  origem String
+
+  agilidade Int @default(1)
+  forca     Int @default(1)
+  intelecto Int @default(1)
+  presenca  Int @default(1)
+  vigor     Int @default(1)
+
+  pv_max     Int @default(10)
+  pv_atual   Int @default(10)
+  ps_max     Int @default(10) 
+  ps_atual   Int @default(10)
+  pe_max     Int @default(10)
+  pe_atual   Int @default(10)
+  pp_max   Int?
+  pp_atual Int?
+
+  defesa_passiva  Int @default(10)
+  defesa_esquiva  Int @default(10)
+  defesa_bloqueio  Int @default(10)
+  defesa_protecao  Int @default(0)
+  defesa_bonus Int @default(0) 
+  patente         String @default("Recruta") 
+
+  pericias   Json   @default("[]")
+  inventario Json   @default("[]")
+
+  prestigio       Int     @default(0)
+  credito         String  @default("Baixo")
+  carga_atual     Int     @default(0)
+  carga_max       Int     @default(5)
+
+  // --- [NOVO] ABA "PERFIL" ---
+  imageUrl         String? // Opcional
+  dataNascimento   String? // String é mais simples que DateTime para mock
+  idadeEnvelhecida Int     @default(0) // O "+ nº de anos"
+  
+  trilha           String? // A trilha da classe
+  elemento         String? // Ex: "Sangue", "Morte"
+  
+  // Textos longos
+  historia         String? @db.Text
+  aparencia        String? @db.Text
+  personalidade    String? @db.Text
+  anotacoes        String? @db.Text
+  favoritos        String? @db.Text
+  primeiroEncontro String? @db.Text
+  doencasFobias    String? @db.Text
+  manias           String? @db.Text
+  piorPesadelo     String? @db.Text
+
+  // Lista de Habilidades
+  habilidades      Json    @default("[]")
+  rituais          Json    @default("[]")
+}
