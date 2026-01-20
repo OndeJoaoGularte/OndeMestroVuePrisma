@@ -94,7 +94,7 @@
                                         <v-text-field :model-value="idadeCalculada"
                                             prepend-inner-icon="mdi-cake-variant" label="Idade" variant="outlined"
                                             density="compact" suffix="anos" hide-details readonly class="cursor-pointer"
-                                            @click="emit('open:idade')"></v-text-field>
+                                            @click="showModalIdade = true"></v-text-field>
                                     </v-col>
                                 </v-row>
                             </v-col>
@@ -106,13 +106,14 @@
                             <v-col cols="6">
                                 <v-text-field :model-value="classeNome" label="Classe" variant="outlined"
                                     density="compact" prepend-inner-icon="mdi-shield-account" hide-details readonly
-                                    class="cursor-pointer" @click="emit('open:classe')"></v-text-field>
+                                    class="cursor-pointer" @click="showClasseModal = true"></v-text-field>
                             </v-col>
+
                             <v-col cols="6">
                                 <v-text-field :model-value="trilhaNome" label="Trilha" variant="outlined"
                                     density="compact" prepend-inner-icon="mdi-sign-direction" hide-details readonly
                                     :disabled="!character.classe" class="cursor-pointer"
-                                    @click="emit('open:trilha')"></v-text-field>
+                                    @click="showTrilhaModal = true"></v-text-field>
                             </v-col>
                             <v-col cols="6">
                                 <v-select v-model="character.patente" :items="opcoesPatentes" label="Patente"
@@ -242,7 +243,7 @@
                             <v-col cols="4">
                                 <v-sheet color="surface" border rounded
                                     class="py-1 cursor-pointer hover-sheet d-flex flex-column align-center justify-center h-100"
-                                    @click="showModalResistencias = true" v-ripple>
+                                    @click="showModalRD = true" v-ripple>
                                     <div class="text-caption text-uppercase font-weight-bold text-medium-emphasis">
                                         RD</div>
                                     <div class="d-flex align-center">
@@ -275,12 +276,17 @@
                 </v-window-item>
             </v-window>
         </v-card-text>
-        <modal-origem 
-  v-model="showOrigemModal" 
-  @select="setOrigem" 
-/>
+        <ModalClasse v-model="showClasseModal" @select="setClasse" />
 
-        <modal-r-d v-model="showModalResistencias" :resistencias="character.resistencias || []"
+        <ModalOrigem v-model="showOrigemModal" @select="setOrigem" />
+
+        <ModalTrilha v-model="showTrilhaModal" :classe-id="character.classe" :classe-nome="classeNome"
+            @select="setTrilha" />
+
+        <ModalIdade v-model="showModalIdade" :data-nascimento="character.dataNascimento"
+            :idade-envelhecida="character.idadeEnvelhecida || 0" @save="salvarIdade" />
+
+        <ModalRD v-model="showModalRD" :resistencias="character.resistencias || []"
             @adicionar="onAdicionarResistencia" @remover="onRemoverResistencia" />
     </v-card>
 </template>
@@ -288,11 +294,12 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useFichaOrdem } from '@/composables/ordem/useFicha'; // Ajuste o caminho se necessário
-import ModalRD from './modals/info/ModalRD.vue';
 import type { ResistenciaManual } from '@/types/ordem/models';
+import ModalClasse from './modals/escolhas/ModalClasse.vue';
 import ModalOrigem from './modals/escolhas/ModalOrigem.vue';
-
-const emit = defineEmits(['open:origem', 'open:classe', 'open:trilha', 'open:idade']);
+import ModalTrilha from './modals/escolhas/ModalTrilha.vue';
+import ModalRD from './modals/info/ModalRD.vue';
+import ModalIdade from './modals/info/ModalIdade.vue';
 
 const {
     character,
@@ -307,14 +314,30 @@ const {
 } = useFichaOrdem();
 
 const showCombate = ref(false);
-const showModalResistencias = ref(false);
-const showOrigemModal = ref(false);
+const showOrigemModal = ref(false); // Já tinha esse
+const showClasseModal = ref(false); // Novo
+const showTrilhaModal = ref(false); // Novo
+const showModalIdade = ref(false);
+const showModalRD = ref(false);
 
-// FUNÇÃO QUE SALVA A ESCOLHA
 const setOrigem = (id: string) => {
-  // Atualiza a propriedade correta na ficha
-  character.value.origem = id; 
+    character.value.origem = id;
 };
+
+const setClasse = (id: string) => {
+    character.value.classe = id;
+    character.value.trilha = null; // Reseta trilha ao mudar classe
+};
+
+const setTrilha = (id: string) => {
+    character.value.trilha = id;
+};
+
+const salvarIdade = (dados: { nascimento: string; envelhecido: number }) => {
+    character.value.dataNascimento = dados.nascimento;
+    character.value.idadeEnvelhecida = dados.envelhecido;
+};
+
 // --- Lógica de Resistências ---
 const onAdicionarResistencia = (novaResistencia: ResistenciaManual) => {
     if (!character.value.resistencias) {

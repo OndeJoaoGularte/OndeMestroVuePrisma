@@ -1,50 +1,41 @@
 <template>
-  <v-dialog v-model="isOpen" max-width="400px">
-    <v-card>
-      <v-card-title>Calcular Idade</v-card-title>
-      <v-card-text>
-        <v-text-field
-          v-model="localDataAtual"
-          label="Data Atual (Campanha)"
-          prepend-inner-icon="mdi-calendar-today"
-          density="compact"
-          placeholder="DD/MM/AAAA"
-          hide-details
-        ></v-text-field>
-        
-        <v-text-field
-          v-model="localNascimento"
-          label="Data de Nascimento"
-          prepend-inner-icon="mdi-calendar"
-          density="compact"
-          placeholder="DD/MM/AAAA"
-          class="mt-4" 
-          hide-details
-        ></v-text-field>
+    <v-dialog :model-value="modelValue" @update:model-value="$emit('update:modelValue', $event)" max-width="400px" scrollable>
+        <v-card>
+            <v-card-title class="text-h5 bg-surface-light d-flex align-center">
+                <v-icon start>mdi-cake-variant</v-icon>
+                Definir Idade
+                <v-spacer></v-spacer>
+                <v-btn icon="mdi-close" variant="text" size="small" @click="$emit('update:modelValue', false)"></v-btn>
+            </v-card-title>
+            <v-card-text class="pt-4">
+                <v-text-field v-model="localDataAtual" label="Data Atual (Campanha)"
+                    prepend-inner-icon="mdi-calendar-today" density="compact" variant="outlined"
+                    placeholder="DD/MM/AAAA" hide-details class="mb-3"></v-text-field>
 
-        <v-text-field
-          v-model.number="localEnvelhecido"
-          label="Anos Envelhecidos"
-          prepend-inner-icon="mdi-plus-box"
-          density="compact"
-          type="number"
-          suffix="anos"
-          class="mt-4"
-          hide-details
-        ></v-text-field>
-      </v-card-text>
+                <v-text-field v-model="localNascimento" label="Data de Nascimento" prepend-inner-icon="mdi-calendar"
+                    density="compact" variant="outlined" placeholder="DD/MM/AAAA" hide-details
+                    class="mb-3"></v-text-field>
 
-      <v-card-actions>
-        <v-spacer></v-spacer>
-        <v-btn text @click="isOpen = false">Cancelar</v-btn>
-        <v-btn color="primary" variant="flat" @click="salvar">Salvar</v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+                <v-text-field v-model.number="localEnvelhecido" label="Modificador (Envelhecimento Mágico)"
+                    prepend-inner-icon="mdi-plus-box" density="compact" variant="outlined" type="number" suffix="anos"
+                    hide-details></v-text-field>
+
+                <div class="text-caption text-grey mt-2">
+                    Use o modificador para somar anos à idade cronológica (ex: rituais, maldições).
+                </div>
+            </v-card-text>
+
+            <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn text @click="$emit('update:modelValue', false)">Cancelar</v-btn>
+                <v-btn color="primary" variant="flat" @click="salvar">Salvar</v-btn>
+            </v-card-actions>
+        </v-card>
+    </v-dialog>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, watch } from 'vue';
 
 const props = defineProps<{
   modelValue: boolean;
@@ -54,17 +45,12 @@ const props = defineProps<{
 
 const emit = defineEmits(['update:modelValue', 'save']);
 
-const isOpen = computed({
-  get: () => props.modelValue,
-  set: (value) => emit('update:modelValue', value)
-});
-
-// Estado Local do Modal
-const localDataAtual = ref('15/01/2023'); // Poderia vir de prop também se fosse global
+// Estado Local
+const localDataAtual = ref('15/01/2023'); // Exemplo
 const localNascimento = ref('');
 const localEnvelhecido = ref(0);
 
-// Quando o modal abre, copia os dados do Pai para o estado Local
+// Sincroniza quando abre
 watch(() => props.modelValue, (aberto) => {
   if (aberto) {
     localNascimento.value = props.dataNascimento || '';
@@ -77,6 +63,6 @@ const salvar = () => {
     nascimento: localNascimento.value,
     envelhecido: localEnvelhecido.value
   });
-  isOpen.value = false;
+  emit('update:modelValue', false);
 };
 </script>

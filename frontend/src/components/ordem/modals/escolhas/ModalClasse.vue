@@ -1,12 +1,11 @@
 <template>
   <v-dialog v-model="isOpen" max-width="85vw" width="85vw" scrollable>
-    <v-card class="d-flex flex-column">
+    <v-card>
       <v-card-title class="text-h5 bg-surface-light d-flex align-center">
         Selecionar Classe
         <v-spacer></v-spacer>
         <v-btn icon="mdi-close" variant="text" size="small" @click="isOpen = false"></v-btn>
       </v-card-title>
-      <v-divider></v-divider>
 
       <v-card-text>
         <v-row>
