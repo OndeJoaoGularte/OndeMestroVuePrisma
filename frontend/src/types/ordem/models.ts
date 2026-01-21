@@ -49,12 +49,18 @@ export interface Origem {
   habilidade: Habilidade
 }
 
+export interface HabilidadeTrilha extends Habilidade {
+  lvl: number
+}
+
+// 3. A Trilha
 export interface Trilha {
   id: string
   classeId: string
   nome: string
   descricao: string
-  habilidade: Habilidade
+  habilidades: HabilidadeTrilha[] 
+  
   base_pp: number
 }
 

@@ -10,7 +10,7 @@
                 <v-btn icon="mdi-close" variant="text" size="small" @click="isOpen = false"></v-btn>
             </v-card-title>
 
-            <v-card-text class="pa-0">
+            <v-card-text class="pa-0 d-flex flex-column" style="height: 60vh;">
                 <v-expansion-panels variant="accordion">
                     <v-expansion-panel v-for="trilha in trilhasFiltradas" :key="trilha.id">
                         <v-expansion-panel-title class="py-2">
@@ -28,11 +28,30 @@
                         <v-expansion-panel-text>
                             <p class="text-body-2 mb-3">{{ trilha.descricao }}</p>
                             <v-divider class="my-2"></v-divider>
-                            <div>
-                                <div class="text-caption font-weight-bold text-uppercase">Habilidade de Trilha (LVL 2)
+                            <div class="text-caption font-weight-bold text-uppercase mb-2 text-primary">
+                                Progressão de Habilidades
+                            </div>
+                            <div class="d-flex flex-column gap-3">
+                                <div v-for="(hab, index) in trilha.habilidades" :key="index" class="d-flex">
+                                    <div class="d-flex flex-column align-center mr-3" style="width: 50px">
+                                        <v-chip size="x-small" :color="hab.lvl === 2 ? 'primary' : 'grey-darken-1'"
+                                            variant="flat" class="font-weight-bold px-1 justify-center"
+                                            style="width: 50px">
+                                            {{ hab.lvl === 2 ? 'LVL ' + 2 : 'LVL ' + hab.lvl }}
+                                        </v-chip>
+
+                                        <div v-if="index !== trilha.habilidades.length - 1"
+                                            class="v-line flex-grow-1 bg-grey-lighten-2 my-1" style="width: 3px;"></div>
+                                    </div>
+
+                                    <div class="pb-3 flex-grow-1">
+                                        <p class="font-weight-bold text-error">
+                                            {{ hab.nome }}
+                                        </p>
+                                        <div class="text-caption text-medium-emphasis text-wrap" v-html="hab.descricao">
+                                        </div>
+                                    </div>
                                 </div>
-                                <p class="font-weight-bold text-error mb-1">{{ trilha.habilidade.nome }}</p>
-                                <p class="text-caption">{{ trilha.habilidade.descricao }}</p>
                             </div>
                         </v-expansion-panel-text>
                     </v-expansion-panel>

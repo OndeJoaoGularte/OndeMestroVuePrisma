@@ -220,7 +220,7 @@ export function useFichaOrdem() {
     // 1. Filtro de Texto
     if (searchItem.value) {
       lista = lista.filter((item) =>
-        item.nome.toLowerCase().includes(searchItem.value.toLowerCase())
+        item.nome.toLowerCase().includes(searchItem.value.toLowerCase()),
       )
     }
 
@@ -235,15 +235,15 @@ export function useFichaOrdem() {
   // 1. Filtrar APENAS Armas e forçar a tipagem para ArmaBase
   const armasEquipadas = computed(() => {
     return personagemInventarioCompleto.value.filter(
-      (item) => item.tipo === 'Arma'
-    ) as (ItemProcessado & ArmaBase)[] 
+      (item) => item.tipo === 'Arma',
+    ) as (ItemProcessado & ArmaBase)[]
     // ^-- O 'as' garante ao TS que esses itens têm propriedades de Arma (dano, critico)
   })
 
   // 2. Filtrar APENAS Proteções e forçar a tipagem para ProtecaoBase
   const protecoesEquipadas = computed(() => {
     return personagemInventarioCompleto.value.filter(
-      (item) => item.tipo === 'Protecao'
+      (item) => item.tipo === 'Protecao',
     ) as (ItemProcessado & ProtecaoBase)[]
     // ^-- O 'as' garante ao TS que esses itens têm defesa e resistencia_dano
   })
@@ -355,25 +355,25 @@ export function useFichaOrdem() {
   )
 
   const idadeCalculada = computed(() => {
-      if (!character.value) return 0
-      const parseDate = (dateStr: string): Date | null => {
-        if (!dateStr || !/^\d{2}\/\d{2}\/\d{4}$/.test(dateStr)) return null
-        const parts = dateStr.split('/').map(Number)
-        if (parts[0] === undefined || parts[1] === undefined || parts[2] === undefined) return null
-        return new Date(parts[2], parts[1] - 1, parts[0])
-      }
-      const dataAtual = '15/01/2023'
-      const birthDate = parseDate(character.value.dataNascimento || '')
-      const currentDate = parseDate(dataAtual)
-      if (!birthDate || !currentDate) return '?'
-      let idadeBase = currentDate.getFullYear() - birthDate.getFullYear()
-      const m = currentDate.getMonth() - birthDate.getMonth()
-      if (m < 0 || (m === 0 && currentDate.getDate() < birthDate.getDate())) {
-        idadeBase--
-      }
-      const envelhecido = Number(character.value.idadeEnvelhecida) || 0
-      return idadeBase + envelhecido
-    })
+    if (!character.value) return 0
+    const parseDate = (dateStr: string): Date | null => {
+      if (!dateStr || !/^\d{2}\/\d{2}\/\d{4}$/.test(dateStr)) return null
+      const parts = dateStr.split('/').map(Number)
+      if (parts[0] === undefined || parts[1] === undefined || parts[2] === undefined) return null
+      return new Date(parts[2], parts[1] - 1, parts[0])
+    }
+    const dataAtual = '15/01/2023'
+    const birthDate = parseDate(character.value.dataNascimento || '')
+    const currentDate = parseDate(dataAtual)
+    if (!birthDate || !currentDate) return '?'
+    let idadeBase = currentDate.getFullYear() - birthDate.getFullYear()
+    const m = currentDate.getMonth() - birthDate.getMonth()
+    if (m < 0 || (m === 0 && currentDate.getDate() < birthDate.getDate())) {
+      idadeBase--
+    }
+    const envelhecido = Number(character.value.idadeEnvelhecida) || 0
+    return idadeBase + envelhecido
+  })
 
   const opcoesTrilhaFiltradas = computed(() =>
     DB_TRILHAS.filter((t) => t.classeId === character.value.classe),
@@ -425,99 +425,123 @@ export function useFichaOrdem() {
   )
 
   // Mudança de Trilha
-  watch(() => character.value.trilha, (novoId, antigoId) => {
+  watch(
+    () => character.value.trilha,
+    (novoId, antigoId) => {
       
-      // 1. LIMPEZA: Remove habilidade da trilha anterior (se houver)
+      // 1. LIMPEZA: Remove habilidades da trilha anterior
       if (antigoId) {
-          const trilhaAntiga = DB_TRILHAS.find(t => t.id === antigoId)
-          if (trilhaAntiga) {
-              character.value.habilidades = character.value.habilidades.filter(
-                  h => h.baseHabilidadeId !== trilhaAntiga.habilidade.id
-              )
-          }
-      }
-
-      // 2. ADIÇÃO: Adiciona nova habilidade e Configura PP
-      if (novoId) {
-          const novaTrilha = DB_TRILHAS.find(t => t.id === novoId)
+        const trilhaAntiga = DB_TRILHAS.find((t) => t.id === antigoId)
+        
+        if (trilhaAntiga && trilhaAntiga.habilidades) {
+          // Cria uma lista com os nomes das habilidades da trilha antiga
+          const nomesParaRemover = trilhaAntiga.habilidades.map(h => h.nome);
           
-          if (novaTrilha) {
-              // Verifica se já não tem essa habilidade para evitar duplicação (o bug dos 5x)
-              const jaPossui = character.value.habilidades.some(
-                  h => h.baseHabilidadeId === novaTrilha.habilidade.id
-              )
-
-              if (!jaPossui) {
-                  character.value.habilidades.push({
-                      ...novaTrilha.habilidade,
-                      instanceId: uuidv4(),
-                      baseHabilidadeId: novaTrilha.habilidade.id,
-                      origem: 'Trilha'
-                  })
-              }
-
-              // Configura PP (Pontos de Possessão)
-              if (novaTrilha.base_pp && novaTrilha.base_pp > 0) {
-                  character.value.pp_max = novaTrilha.base_pp
-                  // Se for a primeira vez selecionando, enche a barra
-                  if (!character.value.pp_atual) { 
-                      character.value.pp_atual = novaTrilha.base_pp 
-                  }
-              } else {
-                  character.value.pp_max = 0
-              }
-          }
-      } else {
-          // Se desmarcou a trilha, zera PP
-          character.value.pp_max = 0
+          character.value.habilidades = character.value.habilidades.filter(
+            (h) => {
+              // Mantém se NÃO for de Origem 'Trilha' OU se o nome não estiver na lista de remoção
+              return h.origem !== 'Trilha' || !nomesParaRemover.includes(h.nome)
+            }
+          )
+        }
       }
-  }, { immediate: true })
 
+      // 2. ADIÇÃO: Adiciona a habilidade de nível inicial (LVL 2)
+      if (novoId) {
+        const novaTrilha = DB_TRILHAS.find((t) => t.id === novoId)
+
+        if (novaTrilha && novaTrilha.habilidades) {
+          
+          // Busca a habilidade de LVL 2 (10% NEX)
+          // Nota: Certifique-se que no seu DB_TRILHAS o lvl está como number: 2
+          const habilidadeInicial = novaTrilha.habilidades.find((h) => h.lvl === 2)
+
+          if (habilidadeInicial) {
+            
+            // Verifica duplicidade pelo nome (mais seguro que ID gerado dinamicamente)
+            const jaPossui = character.value.habilidades.some(
+              (h) => h.nome === habilidadeInicial.nome && h.origem === 'Trilha'
+            )
+
+            if (!jaPossui) {
+              character.value.habilidades.push({
+                id: uuidv4(), 
+                nome: habilidadeInicial.nome,
+                descricao: habilidadeInicial.descricao,
+                origem: 'Trilha', // Tag Importante
+                
+                // Dados de Controle
+                instanceId: uuidv4(),
+                baseHabilidadeId: `trilha-${novoId}-lvl2` // ID fictício para controle
+              })
+            }
+          }
+
+          // Configura PP (Pontos de Possessão)
+          if (novaTrilha.base_pp && novaTrilha.base_pp > 0) {
+            character.value.pp_max = novaTrilha.base_pp
+            if (!character.value.pp_atual) {
+              character.value.pp_atual = novaTrilha.base_pp
+            }
+          } else {
+            character.value.pp_max = 0
+          }
+        }
+      } else {
+        // Se desmarcou a trilha (novoId é nulo), zera PP
+        character.value.pp_max = 0
+      }
+    },
+    { immediate: true },
+  )
   // Mudança de Origem
-  watch(() => character.value.origem, (novoId, antigoId) => {
-      
+  watch(
+    () => character.value.origem,
+    (novoId, antigoId) => {
       // 1. LIMPEZA: Remove habilidade da origem anterior
       if (antigoId) {
-          const origemAntiga = DB_ORIGENS.find(o => o.id === antigoId)
-          if (origemAntiga) {
-              character.value.habilidades = character.value.habilidades.filter(
-                  h => h.baseHabilidadeId !== origemAntiga.habilidade.id
-              )
-          }
+        const origemAntiga = DB_ORIGENS.find((o) => o.id === antigoId)
+        if (origemAntiga) {
+          character.value.habilidades = character.value.habilidades.filter(
+            (h) => h.baseHabilidadeId !== origemAntiga.habilidade.id,
+          )
+        }
       }
 
       // 2. ADIÇÃO: Adiciona nova habilidade
       if (novoId) {
-          const novaOrigem = DB_ORIGENS.find(o => o.id === novoId)
-          
-          if (novaOrigem) {
-              // Verifica duplicidade para evitar bugs
-              const jaPossui = character.value.habilidades.some(
-                  h => h.baseHabilidadeId === novaOrigem.habilidade.id
-              )
+        const novaOrigem = DB_ORIGENS.find((o) => o.id === novoId)
 
-              if (!jaPossui) {
-                  character.value.habilidades.push({
-                      ...novaOrigem.habilidade,
-                      instanceId: uuidv4(), // Gera ID único para a ficha
-                      baseHabilidadeId: novaOrigem.habilidade.id,
-                      origem: 'Origem' // Tag para o filtro funcionar
-                  })
-              }
+        if (novaOrigem) {
+          // Verifica duplicidade para evitar bugs
+          const jaPossui = character.value.habilidades.some(
+            (h) => h.baseHabilidadeId === novaOrigem.habilidade.id,
+          )
 
-              // 3. BONUS: Treina automaticamente as perícias da origem
-              if (novaOrigem.pericias) {
-                  novaOrigem.pericias.forEach(nomePericia => {
-                      const pericia = character.value.pericias.find(p => p.nome === nomePericia)
-                      // Só treina se ainda for 0 (Não Treinado) para não sobrescrever Veterano/Expert
-                      if (pericia && pericia.treino === 0) {
-                          pericia.treino = 5
-                      }
-                  })
-              }
+          if (!jaPossui) {
+            character.value.habilidades.push({
+              ...novaOrigem.habilidade,
+              instanceId: uuidv4(), // Gera ID único para a ficha
+              baseHabilidadeId: novaOrigem.habilidade.id,
+              origem: 'Origem', // Tag para o filtro funcionar
+            })
           }
+
+          // 3. BONUS: Treina automaticamente as perícias da origem
+          if (novaOrigem.pericias) {
+            novaOrigem.pericias.forEach((nomePericia) => {
+              const pericia = character.value.pericias.find((p) => p.nome === nomePericia)
+              // Só treina se ainda for 0 (Não Treinado) para não sobrescrever Veterano/Expert
+              if (pericia && pericia.treino === 0) {
+                pericia.treino = 5
+              }
+            })
+          }
+        }
       }
-  }, { immediate: true })
+    },
+    { immediate: true },
+  )
 
   // Recalculo de Barras (PV/PS/PE)
   watch(
@@ -649,7 +673,9 @@ export function useFichaOrdem() {
   }
 
   const atualizarItem = (itemEditado: ItemInstancia) => {
-    const index = character.value.inventario.findIndex((i) => i.instanceId === itemEditado.instanceId)
+    const index = character.value.inventario.findIndex(
+      (i) => i.instanceId === itemEditado.instanceId,
+    )
     if (index > -1) {
       character.value.inventario[index] = itemEditado
       snackbar.value = { show: true, text: 'Item atualizado com sucesso!', color: 'success' }

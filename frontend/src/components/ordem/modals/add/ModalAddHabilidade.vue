@@ -6,8 +6,8 @@
             </v-card-title>
 
             <div class="px-4 pt-2 elevation-1 z-index-1">
-                <v-text-field v-model="search" label="Buscar habilidade..." prepend-inner-icon="mdi-magnify"
-                    variant="outlined" density="compact" hide-details class="mb-2"></v-text-field>
+                <v-text-field v-model="search" placeholder="Buscar habilidade..." prepend-inner-icon="mdi-magnify"
+                    variant="outlined" density="compact" hide-details class="mb-2" clearable></v-text-field>
 
                 <v-tabs v-model="activeTab" density="compact" grow color="primary">
                     <v-tab value="origem">Origem</v-tab>
@@ -66,9 +66,7 @@
                         </v-expansion-panel-title>
 
                         <v-expansion-panel-text>
-                            <p class="text-body-2 mb-2 text-justify">
-                                {{ hab.descricao }}
-                            </p>
+                            <div class="text-body-2 mb-2 text-justify" v-html="hab.descricao"></div>
 
                             <v-divider class="my-2"></v-divider>
 
@@ -103,6 +101,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import type { Habilidade } from '@/types/ordem/models';
+import { v4 as uuidv4 } from 'uuid'
 
 // Importação direta dos "Bancos" para leitura
 import { DB_ORIGENS } from '@/database/ordem/basicos/dbOrigens';
@@ -181,10 +180,21 @@ const listaExibida = computed(() => {
             break;
 
         case 'trilha':
+            // AQUI ESTÁ A CORREÇÃO DA TRILHA
             DB_TRILHAS.forEach(t => {
-                // MUDANÇA 3: Lógica de array
                 if (filtroClasse.value.length === 0 || filtroClasse.value.includes(t.classeId)) {
-                    lista.push({ ...t.habilidade, sourceName: t.nome });
+
+                    // Mapeia todas as habilidades do array
+                    t.habilidades.forEach(habTrilha => {
+                        lista.push({
+                            id: uuidv4(), // ID único para a lista
+                            nome: `${habTrilha.nome} (LVL ${habTrilha.lvl === 2 ? '2' : habTrilha.lvl})`, // Exibe o NEX no nome
+                            descricao: habTrilha.descricao,
+                            origem: 'Trilha', // Injeta origem
+                            sourceName: t.nome
+                        });
+                    });
+
                 }
             });
             break;
