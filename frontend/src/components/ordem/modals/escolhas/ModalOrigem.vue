@@ -1,13 +1,13 @@
 <template>
     <v-dialog v-model="isOpen" max-width="800px" scrollable>
-        <v-card class="d-flex flex-column" style="max-height: 600px;">
+        <v-card class="d-flex flex-column">
             <v-card-title class="text-h5 bg-surface-light d-flex align-center flex-0-0">
                 Selecionar Origem
                 <v-spacer></v-spacer>
                 <v-btn icon="mdi-close" variant="text" size="small" @click="isOpen = false"></v-btn>
             </v-card-title>
 
-            <v-card-text class="pa-0 d-flex flex-column" style="height: 60vh;">
+            <v-card-text class="pa-0 d-flex flex-column" style="height: 65vh;">
                 <div class="pa-3 bg-surface z-index-1 border-b">
                     <v-text-field v-model="search" placeholder="Pesquisar origem..." prepend-inner-icon="mdi-magnify"
                         variant="outlined" density="compact" hide-details clearable></v-text-field>

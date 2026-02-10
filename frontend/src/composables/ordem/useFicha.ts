@@ -14,7 +14,9 @@ import type {
   Maldicao,
   ItemInstancia, // <--- NOME CORRETO
   HabilidadeInstancia,
-  ArmaBase, // <--- NOVO
+  ArmaBase,
+  Ritual,
+  RitualInstancia, // <--- NOVO
 } from '@/types/ordem/models'
 
 // Importação dos Bancos de Dados
@@ -428,21 +430,18 @@ export function useFichaOrdem() {
   watch(
     () => character.value.trilha,
     (novoId, antigoId) => {
-      
       // 1. LIMPEZA: Remove habilidades da trilha anterior
       if (antigoId) {
         const trilhaAntiga = DB_TRILHAS.find((t) => t.id === antigoId)
-        
+
         if (trilhaAntiga && trilhaAntiga.habilidades) {
           // Cria uma lista com os nomes das habilidades da trilha antiga
-          const nomesParaRemover = trilhaAntiga.habilidades.map(h => h.nome);
-          
-          character.value.habilidades = character.value.habilidades.filter(
-            (h) => {
-              // Mantém se NÃO for de Origem 'Trilha' OU se o nome não estiver na lista de remoção
-              return h.origem !== 'Trilha' || !nomesParaRemover.includes(h.nome)
-            }
-          )
+          const nomesParaRemover = trilhaAntiga.habilidades.map((h) => h.nome)
+
+          character.value.habilidades = character.value.habilidades.filter((h) => {
+            // Mantém se NÃO for de Origem 'Trilha' OU se o nome não estiver na lista de remoção
+            return h.origem !== 'Trilha' || !nomesParaRemover.includes(h.nome)
+          })
         }
       }
 
@@ -451,28 +450,26 @@ export function useFichaOrdem() {
         const novaTrilha = DB_TRILHAS.find((t) => t.id === novoId)
 
         if (novaTrilha && novaTrilha.habilidades) {
-          
           // Busca a habilidade de LVL 2 (10% NEX)
           // Nota: Certifique-se que no seu DB_TRILHAS o lvl está como number: 2
           const habilidadeInicial = novaTrilha.habilidades.find((h) => h.lvl === 2)
 
           if (habilidadeInicial) {
-            
             // Verifica duplicidade pelo nome (mais seguro que ID gerado dinamicamente)
             const jaPossui = character.value.habilidades.some(
-              (h) => h.nome === habilidadeInicial.nome && h.origem === 'Trilha'
+              (h) => h.nome === habilidadeInicial.nome && h.origem === 'Trilha',
             )
 
             if (!jaPossui) {
               character.value.habilidades.push({
-                id: uuidv4(), 
+                id: uuidv4(),
                 nome: habilidadeInicial.nome,
                 descricao: habilidadeInicial.descricao,
                 origem: 'Trilha', // Tag Importante
-                
+
                 // Dados de Controle
                 instanceId: uuidv4(),
-                baseHabilidadeId: `trilha-${novoId}-lvl2` // ID fictício para controle
+                baseHabilidadeId: `trilha-${novoId}-lvl2`, // ID fictício para controle
               })
             }
           }
@@ -716,6 +713,55 @@ export function useFichaOrdem() {
     }
   }
 
+  const adicionarRitual = (ritualBase: Ritual) => {
+    // Verifica duplicidade pelo ID base (opcional, mas recomendado)
+    const jaTem = character.value.rituais.some(r => r.baseRitualId === ritualBase.id);
+    
+    if (jaTem) {
+      snackbar.value = { show: true, text: 'Você já possui este ritual!', color: 'warning' };
+      return;
+    }
+
+    // CRIA A INSTÂNCIA (AQUI ESTÁ A CORREÇÃO DO ERRO)
+    const novoRitual: RitualInstancia = {
+      ...ritualBase, // Copia todas as propriedades (nome, elemento, descrição...)
+      
+      // Adiciona os campos de controle da instância
+      instanceId: uuidv4(),
+      baseRitualId: ritualBase.id,
+      
+      // Campos editáveis começam vazios ou padrão
+      custoAtual: 1, 
+    };
+
+    character.value.rituais.push(novoRitual);
+    
+    snackbar.value = {
+      show: true,
+      text: 'Ritual transcendido com sucesso!',
+      color: 'purple-accent-3',
+    };
+  };
+
+  const removerRitual = (id: string) => {
+    character.value.rituais = character.value.rituais.filter((r) => r.id !== id)
+  }
+
+  const atualizarRitual = (ritualEditado: RitualInstancia) => {
+    const index = character.value.rituais.findIndex(r => r.instanceId === ritualEditado.instanceId);
+    
+    if (index !== -1) {
+      // Atualiza o ritual na lista
+      character.value.rituais[index] = ritualEditado;
+      
+      snackbar.value = {
+        show: true,
+        text: 'Ritual atualizado!',
+        color: 'success',
+      };
+    }
+  };
+
   // Helpers visuais
   const getAtributoColor = (a: string) => {
     const map: Record<string, string> = {
@@ -803,5 +849,8 @@ export function useFichaOrdem() {
     removerItem,
     atualizarItem,
     rolarAtaque,
+    adicionarRitual, // <--- EXPORTAR
+    removerRitual,
+    atualizarRitual
   }
 }
