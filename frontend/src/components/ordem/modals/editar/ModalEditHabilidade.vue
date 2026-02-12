@@ -1,11 +1,13 @@
 <template>
-    <v-dialog v-model="isOpen" max-width="500px">
+    <v-dialog v-model="isOpen" max-width="800px" scrollable>
         <v-card>
-            <v-card-title class="text-h5 bg-surface-variant">
+            <v-card-title class="text-h5 bg-surface-light d-flex align-center flex-0-0">
                 Editar Habilidade
+                <v-spacer></v-spacer>
+                <v-btn icon="mdi-close" variant="text" size="small" @click="isOpen = false"></v-btn>
             </v-card-title>
 
-            <v-card-text class="pt-4">
+            <v-card-text class="pt-4" style="height: 65vh;">
                 <v-text-field v-model="localHab.nome" label="Nome da Habilidade" variant="outlined"
                     density="compact"></v-text-field>
 
@@ -15,7 +17,7 @@
                 <v-select v-if="localHab.elemento" v-model="localHab.elemento" label="Elemento" :items="opcoesElemento"
                     clearable variant="outlined" density="compact"></v-select>
 
-                <v-textarea v-model="localHab.descricao" label="Descrição" variant="outlined" rows="5"></v-textarea>
+                <v-textarea v-model="localHab.descricao" label="Descrição" variant="outlined" rows="9"></v-textarea>
             </v-card-text>
 
             <v-card-actions>

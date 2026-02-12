@@ -12,7 +12,7 @@
 
                 <div style="flex: 0 0 auto; z-index: 2;" class="bg-surface">
 
-                    <div class="pa-3 border-b">
+                    <div class="pa-3">
                         <v-text-field v-model="search" placeholder="Pesquisar habilidade..."
                             prepend-inner-icon="mdi-magnify" variant="outlined" density="compact" hide-details
                             clearable></v-text-field>

@@ -744,7 +744,8 @@ export function useFichaOrdem() {
   };
 
   const removerRitual = (id: string) => {
-    character.value.rituais = character.value.rituais.filter((r) => r.id !== id)
+    const idx = character.value.rituais.findIndex((i) => i.instanceId === id)
+    if (idx > -1) character.value.rituais.splice(idx, 1)
   }
 
   const atualizarRitual = (ritualEditado: RitualInstancia) => {

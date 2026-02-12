@@ -16,7 +16,7 @@
                     density="compact" variant="outlined" placeholder="DD/MM/AAAA" hide-details
                     class="mb-3"></v-text-field>
 
-                <v-text-field v-model.number="localEnvelhecido" label="Modificador (Envelhecimento Mágico)"
+                <v-text-field v-model.number="localEnvelhecido" label="Modificador (Envelhecimento Paranormal)"
                     prepend-inner-icon="mdi-plus-box" density="compact" variant="outlined" type="number" suffix="anos"
                     hide-details></v-text-field>
 
